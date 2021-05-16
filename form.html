@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Dane osobowe</title>
+    <meta charset="utf-8"/>
+    <script>
+        function show(form) {
+            let date = validatePesel(form.pesel.value).date.toISOString().substring(0, 10);
+            if (document.getElementById('yesField').checked === false) {
+                if (date !== form.dateOfBirth.value) {
+                    alert('Niepoprawana data urodzenia')
+                } else if (radioInput('sex') !== validatePesel(form.pesel.value).sex) {
+                    alert('Niepoprawna plec')
+                } else {
+                    alert('Imię: ' + form.firstName.value
+                        + '\nNazwisko: ' + form.lastName.value
+                        + '\nData Urodzenia: ' + form.dateOfBirth.value
+                        + '\nPlec: ' + radioInput('sex')
+                        + '\nPesel: ' + form.pesel.value
+                        + '\nEmail: ' + form.email.value
+                        + '\nPesel jest prawidłowy');
+                }
+            } else {
+                alert('Imię: ' + form.firstName.value
+                    + '\nNazwisko: ' + form.lastName.value
+                    + '\nData Urodzenia: ' + form.dateOfBirth.value
+                    + '\nPlec: ' + radioInput('sex')
+                    + '\nPesel: ' + form.pesel.value
+                    + '\nEmail: ' + form.email.value
+                    + '\nPesel jest nieprawidłowy');
+            }
+        }
+
+        function onChange(pesel) {
+            if (document.getElementById('yesField').checked === false) {
+                let date = validatePesel(pesel).date;
+                document.getElementById('dateOfBirthField').value = date.toISOString().substring(0, 10);
+                if (validatePesel(pesel).sex === 'Kobieta') {
+                    document.getElementById('female').checked = true;
+                } else {
+                    document.getElementById('male').checked = true;
+                }
+            }
+        }
+
+        function radioInput(text) {
+            var radios = document.getElementsByName(text);
+
+            for (var i = 0, length = radios.length; i < length; i++) {
+                if (radios[i].checked) {
+                    return radios[i].value;
+                }
+            }
+        }
+
+        function validatePesel(pesel) {
+            var rok = parseInt(pesel.substring(0, 2), 10);
+            var miesiac = parseInt(pesel.substring(2, 4), 10) - 1;
+            var dzien = parseInt(pesel.substring(4, 6), 10);
+
+            if (miesiac >= 80) {
+                rok += 1800;
+                miesiac = miesiac - 80;
+            } else if (miesiac >= 60) {
+                rok += 2200;
+                miesiac = miesiac - 60;
+            } else if (miesiac >= 40) {
+                rok += 2100;
+                miesiac = miesiac - 40;
+            } else if (miesiac >= 20) {
+                rok += 2000;
+                miesiac = miesiac - 20;
+            } else {
+                rok += 1900;
+            }
+
+            var dataUrodzenia = new Date();
+            dataUrodzenia.setFullYear(rok, miesiac, dzien);
+
+            var wagi = [1, 3, 7, 9, 1, 3, 7, 9, 1, 3];
+            var suma = 0;
+            var cyfraKontr = parseInt(pesel.substring(10, 11), 10);
+
+            for (var i = 0; i < wagi.length; i++) {
+                suma += (parseInt(pesel.substring(i, i + 1), 10) * wagi[i]);
+            }
+            if (cyfraKontr == 0) {
+                cyfraKontr = 10;
+            }
+
+            suma = suma % 10;
+            suma = 10 - suma;
+
+
+            var poprawnosc = (suma === cyfraKontr);
+
+            var plec = 'Kobieta';
+
+            if (parseInt(pesel.substring(9, 10), 10) % 2 === 1) {
+                plec = 'Mężczyzna';
+            }
+
+            return {
+                valid: poprawnosc,
+                sex: plec,
+                date: dataUrodzenia
+            };
+        }
+
+    </script>
+</head>
+<body>
+<form onsubmit='show(this); return false;'>
+    <div><label for='firstNameField'>Imię:</label>
+        <input type="text" name='firstName'
+               id='firstNameField'
+               required='required'
+               placeholder='Wpisz swoje imię'
+               autofocus='autofocus'/>
+    </div>
+    <div><label for='lastNameField'>Nazwisko:</label>
+        <input type="text" name='lastName'
+               id='lastNameField'
+               required='required'
+               placeholder='Wpisz swoje nazwisko'/>
+    </div>
+    <div><label for='yesField'>Czy posiadasz nieprawidłowy pesel?</label>
+        <input type="checkbox" name='normal'
+               value="Tak"
+               id='yesField'/>
+    </div>
+    <div><label for='peselField'>Pesel:</label>
+        <input type="number" name='pesel'
+               id='peselField'
+               onchange="onChange(this.value)"
+               step="1"
+               maxlength="11"
+               required='required'
+               placeholder='Wprowadz pesel'/>
+    </div>
+    <div><label for='dateOfBirthField'>Data urodzenia:</label>
+        <input type="date" name='dateOfBirth'
+               id='dateOfBirthField'
+               required='required'
+               placeholder='Podaj date urodzenia'/>
+    </div>
+    <div>Wybierz płeć:<br>
+        <label for='male'>Mężczyzna</label>
+        <input type="radio" name='sex'
+               value="Mężczyzna"
+               id='male'
+               required='required'/><br>
+        <label for='female'>Kobieta</label>
+        <input type="radio" name='sex'
+               value="Kobieta"
+               id='female'
+               required='required'/>
+    </div>
+
+    <div><label for='emailField'>Email:</label>
+        <input type="email" name='email'
+               id='emailField'
+               placeholder='Adres email'/>
+    </div>
+    <div><label for='submit'>Zatwierdz:</label>
+        <input type="submit" name='submit'
+               id='submit'
+               placeholder='Zatwierdz'/>
+    </div>
+</form>
+</body>
+</html>
